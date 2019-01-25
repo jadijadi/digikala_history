@@ -57,7 +57,7 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def get_data(self):
-        self.log.append('starting')
+        self.log.append('شروع')
         app.processEvents()
         def dkprice_to_numbers(dkprice):
             '''gets something like ۱۱۷،۰۰۰ تومان and returns 117000'''
@@ -93,8 +93,17 @@ class Ui_MainWindow(object):
                    'login[password]': self.password.text(), 'remember': 1}
         session = requests.session()
         r = session.post(url, data=payload)
-        if r.status_code != 200: #TODO check if login is correct
-            self.log.append('Can not login. Status code is %s, exiting' % r.status_code)
+        if r.status_code != 200:
+            self.log.append('مشکل در اتصال. کد خطا: %s' % r.status_code)
+            return False
+
+        successful_login_text = 'سفارش‌های من'
+        if re.search(successful_login_text, r.text):
+            self.log.append('لاگین موفق')
+        else:
+            self.log.append('کلمه عبور یا نام کاربری اشتباه است')
+            return False
+
         app.processEvents()
         page_number = 1
         orders = session.get(
@@ -114,22 +123,23 @@ class Ui_MainWindow(object):
             orders = session.get(
                 'https://www.digikala.com/profile/orders/?page=%i' % page_number)
             soup = BeautifulSoup(orders.text, 'html.parser')
-            self.log.append('going for page number %i' % page_number)
+            self.log.append('بررسی صفحه %i' % page_number)
 
-        self.log.append('done')
+        self.log.append('پایان')
 
 
         total_price = 0
         total_purchase = 0
+        full_purchase_list = ''
         for date, name, num, price in all_orders:
-            print(date)
-            print(name)
-            print(num)
-            print(price)
-            print('------------')
+            this_purchase_str = "تاریخ %s:‌ %s عدد %s, به قیمت هر واحد %s\n" % (
+                date, num, name, price)
+            full_purchase_list = this_purchase_str + full_purchase_list
             total_price += price * num
             total_purchase += 1
-        self.output_general.setText("کل خرید از دیجیکالا: %s\nتعداد خرید: %s" % (total_price, total_purchase))
+        self.output_general.setText(
+            "کل خرید از دیجیکالا: %s\nتعداد خرید: %s\n\n" % (total_price, total_purchase))
+        self.output_general.append(full_purchase_list)
 
 
 
