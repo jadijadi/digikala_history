@@ -7,6 +7,8 @@
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import QTableWidgetItem
+from PyQt5.QtGui import QIcon, QPixmap
 import re
 import requests
 from bs4 import BeautifulSoup
@@ -14,37 +16,75 @@ from bs4 import BeautifulSoup
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(800, 600)
+        MainWindow.resize(851, 611)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.username = QtWidgets.QLineEdit(self.centralwidget)
-        self.username.setGeometry(QtCore.QRect(40, 140, 161, 31))
+        self.username.setGeometry(QtCore.QRect(20, 230, 171, 31))
+        self.username.setText("")
         self.username.setObjectName("username")
         self.password = QtWidgets.QLineEdit(self.centralwidget)
-        self.password.setGeometry(QtCore.QRect(40, 180, 161, 31))
+        self.password.setGeometry(QtCore.QRect(20, 270, 171, 31))
         self.password.setEchoMode(QtWidgets.QLineEdit.Password)
         self.password.setObjectName("password")
         self.run = QtWidgets.QPushButton(self.centralwidget)
-        self.run.setGeometry(QtCore.QRect(70, 230, 88, 27))
+        self.run.setGeometry(QtCore.QRect(60, 320, 88, 27))
         self.run.setObjectName("run")
         self.tabWidget = QtWidgets.QTabWidget(self.centralwidget)
-        self.tabWidget.setGeometry(QtCore.QRect(220, 0, 581, 451))
+        self.tabWidget.setGeometry(QtCore.QRect(210, 10, 621, 461))
         self.tabWidget.setObjectName("tabWidget")
         self.tab = QtWidgets.QWidget()
         self.tab.setObjectName("tab")
-        self.output_general = QtWidgets.QTextBrowser(self.tab)
-        self.output_general.setGeometry(QtCore.QRect(0, 0, 571, 411))
+        self.output_general = QtWidgets.QTableWidget(self.tab)
+        self.output_general.setGeometry(QtCore.QRect(10, 10, 601, 361))
+        self.output_general.setLayoutDirection(QtCore.Qt.RightToLeft)
+        self.output_general.setLineWidth(1)
+        self.output_general.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustIgnored)
+        self.output_general.setShowGrid(True)
         self.output_general.setObjectName("output_general")
+        self.output_general.setColumnCount(4)
+        self.output_general.setRowCount(0)
+        item = QtWidgets.QTableWidgetItem()
+        item.setTextAlignment(QtCore.Qt.AlignTrailing | QtCore.Qt.AlignVCenter)
+        self.output_general.setHorizontalHeaderItem(0, item)
+        item = QtWidgets.QTableWidgetItem()
+        item.setTextAlignment(QtCore.Qt.AlignTrailing | QtCore.Qt.AlignVCenter)
+        self.output_general.setHorizontalHeaderItem(1, item)
+        item = QtWidgets.QTableWidgetItem()
+        item.setTextAlignment(QtCore.Qt.AlignTrailing | QtCore.Qt.AlignVCenter)
+        self.output_general.setHorizontalHeaderItem(2, item)
+        item = QtWidgets.QTableWidgetItem()
+        item.setTextAlignment(QtCore.Qt.AlignTrailing | QtCore.Qt.AlignVCenter)
+        self.output_general.setHorizontalHeaderItem(3, item)
+        self.output_general.horizontalHeader().setCascadingSectionResizes(False)
+        self.output_general.horizontalHeader().setDefaultSectionSize(80)
+        self.output_general.horizontalHeader().setMinimumSectionSize(38)
+        self.output_general.horizontalHeader().setSortIndicatorShown(False)
+        self.output_general.horizontalHeader().setStretchLastSection(True)
+        self.output_general.verticalHeader().setCascadingSectionResizes(False)
+        self.output_general.verticalHeader().setSortIndicatorShown(False)
+        self.output_general.verticalHeader().setStretchLastSection(False)
+        self.output_result = QtWidgets.QListWidget(self.tab)
+        self.output_result.setGeometry(QtCore.QRect(10, 380, 601, 51))
+        self.output_result.setLayoutDirection(QtCore.Qt.RightToLeft)
+        self.output_result.setObjectName("output_result")
         self.tabWidget.addTab(self.tab, "")
         self.tab_2 = QtWidgets.QWidget()
         self.tab_2.setObjectName("tab_2")
         self.tabWidget.addTab(self.tab_2, "")
         self.log = QtWidgets.QTextBrowser(self.centralwidget)
-        self.log.setGeometry(QtCore.QRect(0, 460, 791, 192))
+        self.log.setGeometry(QtCore.QRect(210, 480, 621, 81))
         self.log.setObjectName("log")
+        self.logo = QtWidgets.QLabel(self.centralwidget)
+        self.pixmap = QPixmap('./dg-logo.png')
+        self.logo.setScaledContents(True)
+        self.logo.setPixmap(self.pixmap)
+        self.logo.setGeometry(QtCore.QRect(20, 30, 171, 171))
+        self.logo.setText("")
+        self.logo.setObjectName("logo")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 24))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 851, 21))
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
@@ -131,29 +171,50 @@ class Ui_MainWindow(object):
         total_price = 0
         total_purchase = 0
         full_purchase_list = ''
+        n = 0
+        self.output_general.setRowCount(len(all_orders))
         for date, name, num, price in all_orders:
             this_purchase_str = "تاریخ %s:‌ %s عدد %s, به قیمت هر واحد %s\n" % (
                 date, num, name, price)
             full_purchase_list = this_purchase_str + full_purchase_list
             total_price += price * num
             total_purchase += 1
-        self.output_general.setText(
-            "کل خرید از دیجیکالا: %s\nتعداد خرید: %s\n\n" % (total_price, total_purchase))
-        self.output_general.append(full_purchase_list)
 
+            self.output_general.setItem(n,0,QTableWidgetItem(str(date)))
+            self.output_general.setItem(n,1,QTableWidgetItem(str(num)))
+            self.output_general.setItem(n,2,QTableWidgetItem(str(price)))
+            self.output_general.setItem(n,3,QTableWidgetItem(str(name)))
+            n=n+1
+        self.output_result.clear()
+        price_item = ['کل خرید شما از دیجی کالا:    {} تومان'.format(total_price)]
+        purchase_item = ['تعداد خرید:    {}'.format(total_purchase)]
+
+        self.output_result.addItems(price_item)
+        self.output_result.addItems(purchase_item)
 
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "سابقه من در دیجی کالا"))
-        self.username.setText(_translate("MainWindow", ""))
+        self.username.setPlaceholderText(_translate("MainWindow", "Email"))
+        self.password.setPlaceholderText(_translate("MainWindow", "Password"))
         self.run.setText(_translate("MainWindow", "اجرا"))
+        self.output_general.setSortingEnabled(False)
+        item = self.output_general.horizontalHeaderItem(0)
+        item.setText(_translate("MainWindow", "تاریخ"))
+        item = self.output_general.horizontalHeaderItem(1)
+        item.setText(_translate("MainWindow", "تعداد"))
+        item = self.output_general.horizontalHeaderItem(2)
+        item.setText(_translate("MainWindow", "قیمت"))
+        item = self.output_general.horizontalHeaderItem(3)
+        item.setText(_translate("MainWindow", "نام"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "اطلاعات عمومی"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("MainWindow", "نمودار خرید"))
 
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
+    #app.setLayoutDirection(QtCore.Qt.RightToLeft)
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()
     ui.setupUi(MainWindow)
