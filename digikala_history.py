@@ -119,11 +119,12 @@ class Ui_MainWindow(object):
                 print('going to fetch: http://digikala.com'+this_order_link)
                 one_page = session.get('http://digikala.com'+this_order_link)
                 extract_data(one_page, all_orders)
-            page_number += 1
+            
             orders = session.get(
                 'https://www.digikala.com/profile/orders/?page=%i' % page_number)
             soup = BeautifulSoup(orders.text, 'html.parser')
             self.log.append('بررسی صفحه %i' % page_number)
+            page_number += 1
 
         self.log.append('پایان')
 
