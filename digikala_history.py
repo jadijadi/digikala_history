@@ -94,6 +94,7 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         self.tabWidget.setCurrentIndex(0)
         self.run.clicked.connect(self.get_data)
+        self.password.returnPressed.connect(self.get_data)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def get_data(self):
