@@ -173,6 +173,7 @@ class Ui_MainWindow(object):
         full_purchase_list = ''
         n = 0
         self.output_general.setRowCount(len(all_orders))
+        
         for date, name, num, price in all_orders:
             this_purchase_str = "تاریخ %s:‌ %s عدد %s, به قیمت هر واحد %s\n" % (
                 date, num, name, price)
