@@ -97,6 +97,13 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def get_data(self):
+        if self.username.text() == '':
+            self.log.append('ایمیل وارد نشده است !')
+            return
+        if self.password.text() == '':
+            self.log.append('رمزورود وارد نشده است !')
+            return
+        
         self.log.append('شروع')
         app.processEvents()
         def dkprice_to_numbers(dkprice):
