@@ -36,13 +36,13 @@ class Ui_MainWindow(object):
         self.tab = QtWidgets.QWidget()
         self.tab.setObjectName("tab")
         self.output_general = QtWidgets.QTableWidget(self.tab)
-        self.output_general.setGeometry(QtCore.QRect(10, 10, 601, 361))
+        self.output_general.setGeometry(QtCore.QRect(10, 10, 601, 321))
         self.output_general.setLayoutDirection(QtCore.Qt.RightToLeft)
         self.output_general.setLineWidth(1)
         self.output_general.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustIgnored)
         self.output_general.setShowGrid(True)
         self.output_general.setObjectName("output_general")
-        self.output_general.setColumnCount(4)
+        self.output_general.setColumnCount(5)
         self.output_general.setRowCount(0)
         item = QtWidgets.QTableWidgetItem()
         item.setTextAlignment(QtCore.Qt.AlignTrailing | QtCore.Qt.AlignVCenter)
@@ -56,6 +56,9 @@ class Ui_MainWindow(object):
         item = QtWidgets.QTableWidgetItem()
         item.setTextAlignment(QtCore.Qt.AlignTrailing | QtCore.Qt.AlignVCenter)
         self.output_general.setHorizontalHeaderItem(3, item)
+        item = QtWidgets.QTableWidgetItem()
+        item.setTextAlignment(QtCore.Qt.AlignTrailing | QtCore.Qt.AlignVCenter)
+        self.output_general.setHorizontalHeaderItem(4, item)
         self.output_general.horizontalHeader().setCascadingSectionResizes(False)
         self.output_general.horizontalHeader().setDefaultSectionSize(80)
         self.output_general.horizontalHeader().setMinimumSectionSize(38)
@@ -65,7 +68,7 @@ class Ui_MainWindow(object):
         self.output_general.verticalHeader().setSortIndicatorShown(False)
         self.output_general.verticalHeader().setStretchLastSection(False)
         self.output_result = QtWidgets.QListWidget(self.tab)
-        self.output_result.setGeometry(QtCore.QRect(10, 380, 601, 51))
+        self.output_result.setGeometry(QtCore.QRect(10, 340, 601, 91))
         self.output_result.setLayoutDirection(QtCore.Qt.RightToLeft)
         self.output_result.setObjectName("output_result")
         self.tabWidget.addTab(self.tab, "")
@@ -111,7 +114,7 @@ class Ui_MainWindow(object):
             return int(price)
 
 
-        def extract_data(one_page, all_orders):            
+        def extract_data(one_page, all_orders, all_post_prices):
             soup = BeautifulSoup(one_page.text, 'html.parser')
             # there might be more than one table
             for this_table in soup.find_all('div', class_='c-table-order__body'):
@@ -123,10 +126,16 @@ class Ui_MainWindow(object):
                     dkprice = this_item.find(
                         'div', class_='c-table-order__cell--price-value').get_text()
                     price = dkprice_to_numbers(dkprice)
+                    dkdiscount = this_item.find(
+                        'div', class_='c-table-order__cell c-table-order__cell--discount').get_text()
+                    discount = dkprice_to_numbers(dkdiscount)
                     date = soup.find('h4').span.get_text()
                     date = re.sub(u'ثبت شده در تاریخ ', '', date)
-                    all_orders.append((date, name, num, price))
+                    all_orders.append((date, name, num, price, discount))
 
+            dkpost_price = soup.find_all('div', class_= 'c-table-draught__col')[3].get_text()
+            post_price = dkprice_to_numbers(dkpost_price)
+            all_post_prices.append(post_price)
 
         url = 'https://www.digikala.com/users/login/'
         payload = {'login[email_phone]': self.username.text(),
@@ -151,6 +160,7 @@ class Ui_MainWindow(object):
         soup = BeautifulSoup(orders.text, 'html.parser')
 
         all_orders = []  # (list of (date, name, number, item_price))
+        all_post_prices = [] # list of post prices
 
         while not soup.find('div', class_='c-profile-empty'):
             app.processEvents()
@@ -158,7 +168,7 @@ class Ui_MainWindow(object):
                 this_order_link = this_order.get('href')
                 print('going to fetch: http://digikala.com'+this_order_link)
                 one_page = session.get('http://digikala.com'+this_order_link)
-                extract_data(one_page, all_orders)
+                extract_data(one_page, all_orders, all_post_prices)
             page_number += 1
             orders = session.get(
                 'https://www.digikala.com/profile/orders/?page=%i' % page_number)
@@ -172,26 +182,41 @@ class Ui_MainWindow(object):
         total_purchase = 0
         full_purchase_list = ''
         n = 0
+        total_post_price = 0
+        total_discount = 0
         self.output_general.setRowCount(len(all_orders))
         
-        for date, name, num, price in all_orders:
+        for date, name, num, price, discount in all_orders:
             this_purchase_str = "تاریخ %s:‌ %s عدد %s, به قیمت هر واحد %s\n" % (
                 date, num, name, price)
             full_purchase_list = this_purchase_str + full_purchase_list
-            total_price += price * num
+            this_product_total_price = (price*num)-discount
+            total_price += this_product_total_price
             total_purchase += 1
+            total_discount+=discount
 
             self.output_general.setItem(n,0,QTableWidgetItem(str(date)))
             self.output_general.setItem(n,1,QTableWidgetItem(str(num)))
-            self.output_general.setItem(n,2,QTableWidgetItem(str(price)))
-            self.output_general.setItem(n,3,QTableWidgetItem(str(name)))
+            self.output_general.setItem(n,2,QTableWidgetItem(str(this_product_total_price)))
+            self.output_general.setItem(n,3,QTableWidgetItem(str(discount)))
+            self.output_general.setItem(n,4,QTableWidgetItem(str(name)))
             n=n+1
+        purchase_count = len(all_post_prices)
+        for post_price in all_post_prices:
+            total_post_price += post_price
+
         self.output_result.clear()
         price_item = ['کل خرید شما از دیجی کالا:    {} تومان'.format(total_price)]
-        purchase_item = ['تعداد خرید:    {}'.format(total_purchase)]
+        total_post_price_item = ['مجموع هزینه ی پست:          {} تومان'.format(total_post_price)]
+        total_discount_item = ['مجموع تخفیفات دریافتی:     {} تومان'.format(total_discount)]
+        purchase_item = ['تعداد خرید:    {} قطعه'.format(total_purchase)]
+        purchase_count_item = ['دفعات خرید:    {} بار'.format(purchase_count)]
 
         self.output_result.addItems(price_item)
+        self.output_result.addItems(total_post_price_item)
+        self.output_result.addItems(total_discount_item)
         self.output_result.addItems(purchase_item)
+        self.output_result.addItems(purchase_count_item)
 
 
     def retranslateUi(self, MainWindow):
@@ -206,8 +231,10 @@ class Ui_MainWindow(object):
         item = self.output_general.horizontalHeaderItem(1)
         item.setText(_translate("MainWindow", "تعداد"))
         item = self.output_general.horizontalHeaderItem(2)
-        item.setText(_translate("MainWindow", "قیمت"))
+        item.setText(_translate("MainWindow", "قیمت کل"))
         item = self.output_general.horizontalHeaderItem(3)
+        item.setText(_translate("MainWindow", "تخفیف"))
+        item = self.output_general.horizontalHeaderItem(4)
         item.setText(_translate("MainWindow", "نام"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "اطلاعات عمومی"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("MainWindow", "نمودار خرید"))
