@@ -122,7 +122,7 @@ class Ui_MainWindow(object):
                         'div', class_='c-table-order__cell--value').get_text()
                     num = dkprice_to_numbers(dknum)
                     dkprice = this_item.find(
-                        'div', class_='c-table-order__cell--price-value').get_text()
+                        'div', class_='c-table-order__cell--price-final').get_text()
                     price = dkprice_to_numbers(dkprice)
                     date = soup.find('h4').span.get_text()
                     date = re.sub(u'ثبت شده در تاریخ ', '', date)
@@ -180,7 +180,7 @@ class Ui_MainWindow(object):
             this_purchase_str = "تاریخ %s:‌ %s عدد %s, به قیمت هر واحد %s\n" % (
                 date, num, name, price)
             full_purchase_list = this_purchase_str + full_purchase_list
-            total_price += price * num
+            total_price += price
             total_purchase += 1
 
             self.output_general.setItem(n,0,QTableWidgetItem(str(date)))
