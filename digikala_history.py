@@ -103,10 +103,10 @@ class Ui_MainWindow(object):
 
     def get_data(self):
         if self.username.text() == '':
-            self.log.append('ایمیل وارد نشده است !')
+            self.log.append('لطفا ایمیل خود را وارد کنید')
             return
         if self.password.text() == '':
-            self.log.append('رمزورود وارد نشده است !')
+            self.log.append('لطفا پسورد خود را وارد کنید')
             return
         
         self.log.append('شروع')
