@@ -30,6 +30,8 @@ class Ui_MainWindow(object):
         self.run = QtWidgets.QPushButton(self.centralwidget)
         self.run.setGeometry(QtCore.QRect(60, 320, 88, 27))
         self.run.setObjectName("run")
+        self.username.returnPressed.connect(self.run.click)
+        self.password.returnPressed.connect(self.run.click)
         self.tabWidget = QtWidgets.QTabWidget(self.centralwidget)
         self.tabWidget.setGeometry(QtCore.QRect(210, 10, 621, 461))
         self.tabWidget.setObjectName("tabWidget")
