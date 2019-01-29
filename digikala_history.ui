@@ -49,7 +49,7 @@
    <widget class="QPushButton" name="run">
     <property name="geometry">
      <rect>
-      <x>60</x>
+      <x>50</x>
       <y>320</y>
       <width>88</width>
       <height>27</height>
@@ -81,7 +81,7 @@
         <x>10</x>
         <y>10</y>
         <width>601</width>
-        <height>361</height>
+        <height>321</height>
        </rect>
       </property>
       <property name="layoutDirection">
@@ -125,7 +125,7 @@
       </attribute>
       <column>
        <property name="text">
-        <string>date</string>
+        <string>تاریخ</string>
        </property>
        <property name="textAlignment">
         <set>AlignTrailing|AlignVCenter</set>
@@ -133,7 +133,7 @@
       </column>
       <column>
        <property name="text">
-        <string>quantity</string>
+        <string>تعداد</string>
        </property>
        <property name="textAlignment">
         <set>AlignTrailing|AlignVCenter</set>
@@ -141,7 +141,7 @@
       </column>
       <column>
        <property name="text">
-        <string>name</string>
+        <string>قیمت کل</string>
        </property>
        <property name="textAlignment">
         <set>AlignTrailing|AlignVCenter</set>
@@ -149,7 +149,15 @@
       </column>
       <column>
        <property name="text">
-        <string>price</string>
+        <string>تخفیف</string>
+       </property>
+       <property name="textAlignment">
+        <set>AlignTrailing|AlignVCenter</set>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>نام</string>
        </property>
        <property name="textAlignment">
         <set>AlignTrailing|AlignVCenter</set>
@@ -160,9 +168,9 @@
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>380</y>
+        <y>340</y>
         <width>601</width>
-        <height>51</height>
+        <height>91</height>
        </rect>
       </property>
       <property name="layoutDirection">
