@@ -95,6 +95,9 @@ class Ui_MainWindow(object):
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
+        self.descriptionbox = QtWidgets.QTextBrowser(self.centralwidget)
+        self.descriptionbox.setGeometry(QtCore.QRect(10, 360, 190, 150))
+        self.descriptionbox.setObjectName("descriptionbox")
 
         self.retranslateUi(MainWindow)
         self.tabWidget.setCurrentIndex(0)
@@ -248,6 +251,7 @@ class Ui_MainWindow(object):
         item.setText(_translate("MainWindow", "نام"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "اطلاعات عمومی"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("MainWindow", "نمودار خرید"))
+        self.descriptionbox.setText("با اجرای برنامه و وارد کردن نام کاربری (ایمیل) و کلمه عبور، برنامه تاریخچه فعالیت شما رو از سایت دیجی کالا دریافت میکنه و نمایش میده.\nاطلاعات شما با هیچ جای دیگری به اشتراک گذاشته نمیشه و هیچ اطلاعات یا کلمه عبوری از شما نگهداری نمیشه :)")
 
 if __name__ == "__main__":
     import sys

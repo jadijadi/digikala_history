@@ -220,6 +220,16 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
+<widget class="QTextBrowser" name="descriptionbox">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>360</y>
+      <width>190</width>
+      <height>150</height>
+     </rect>
+    </property>
+   </widget>
  <resources/>
  <connections>
   <connection>
