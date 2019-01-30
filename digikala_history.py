@@ -125,6 +125,9 @@ class Ui_MainWindow(object):
             price = re.sub('[^0-9]', '', price)
             return int(price)
 
+        def _price_seperator(price):
+            '''convert price from something like 41250320 to 41,250,320'''
+            return '{:,}'.format(price)
 
         def extract_data(one_page, all_orders, all_post_prices):
             soup = BeautifulSoup(one_page.text, 'html.parser')
@@ -205,8 +208,9 @@ class Ui_MainWindow(object):
             full_purchase_list = this_purchase_str + full_purchase_list
             this_product_total_price = (price*num)-discount
             total_price += this_product_total_price
+            this_product_total_price = _price_seperator(this_product_total_price)
             total_purchase += 1
-            total_discount+=discount
+            total_discount += discount
 
             self.output_general.setItem(n,0,QTableWidgetItem(str(date)))
             self.output_general.setItem(n,1,QTableWidgetItem(str(num)))
@@ -219,11 +223,11 @@ class Ui_MainWindow(object):
             total_post_price += post_price
 
         self.output_result.clear()
-        price_item = ['کل خرید شما از دیجی کالا:    {} تومان'.format(total_price)]
-        total_post_price_item = ['مجموع هزینه ی پست:          {} تومان'.format(total_post_price)]
-        total_discount_item = ['مجموع تخفیفات دریافتی:     {} تومان'.format(total_discount)]
-        purchase_item = ['تعداد خرید:    {} قطعه'.format(total_purchase)]
-        purchase_count_item = ['دفعات خرید:    {} بار'.format(purchase_count)]
+        price_item = ['کل خرید شما از دیجی کالا:\t{} تومان'.format(_price_seperator(total_price))]
+        total_post_price_item = ['مجموع هزینه ی پست:\t\t{} تومان'.format(_price_seperator(total_post_price))]
+        total_discount_item = ['مجموع تخفیفات دریافتی:\t\t{} تومان'.format(_price_seperator(total_discount))]
+        purchase_item = ['تعداد خرید:\t\t\t{} قطعه'.format(total_purchase)]
+        purchase_count_item = ['دفعات خرید:\t\t\t{} بار'.format(purchase_count)]
 
         self.output_result.addItems(price_item)
         self.output_result.addItems(total_post_price_item)
