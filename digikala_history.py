@@ -74,14 +74,14 @@ class ProcessThread(QThread):
         r = session.post(url, data=payload)
         if r.status_code != 200:
             self.UI.log.append('مشکل در اتصال. کد خطا: %s' % r.status_code)
-            return False
+            return 
 
         successful_login_text = 'سفارش‌های من'
         if re.search(successful_login_text, r.text):
             self.UI.log.append('لاگین موفق')
         else:
             self.UI.log.append('کلمه عبور یا نام کاربری اشتباه است')
-            return False
+            return 
 
         page_number = 1
         orders = session.get(
