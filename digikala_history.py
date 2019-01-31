@@ -231,8 +231,11 @@ class Ui_MainWindow(object):
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
-        self.descriptionbox = QtWidgets.QTextBrowser(self.centralwidget)
-        self.descriptionbox.setGeometry(QtCore.QRect(10, 360, 190, 150))
+        self.descriptionbox = QtWidgets.QLabel(self.centralwidget)
+        self.descriptionbox.setGeometry(QtCore.QRect(10, 350, 190, 150))
+        self.descriptionbox.setWordWrap(True)
+        self.descriptionbox.setTextFormat(1)
+        self.descriptionbox.setOpenExternalLinks(True)
         self.descriptionbox.setObjectName("descriptionbox")
 
         self.retranslateUi(MainWindow)
@@ -265,11 +268,7 @@ class Ui_MainWindow(object):
         item.setText(_translate("MainWindow", "نام"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "اطلاعات عمومی"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("MainWindow", "نمودار خرید"))
-        self.descriptionbox.setText(
-            "با اجرای برنامه و وارد کردن نام کاربری (ایمیل) و کلمه عبور، برنامه تاریخچه فعالیت شما رو از سایت دیجی کالا دریافت میکنه و نمایش میده.\nاطلاعات شما با هیچ جای دیگری به اشتراک گذاشته نمیشه و هیچ اطلاعات یا کلمه عبوری از شما نگهداری نمیشه :)")
-
-
-
+        self.descriptionbox.setText("<b>توضیحات :</b><br>با اجرای برنامه و وارد کردن نام کاربری (ایمیل) و کلمه عبور، برنامه تاریخچه فعالیت شما رو از سایت دیجی کالا دریافت میکنه و نمایش میده.<br>اطلاعات شما با هیچ جای دیگری به اشتراک گذاشته نمیشه و هیچ اطلاعات یا کلمه عبوری از شما نگهداری نمیشه :)<br>همچنین اگه توسعه دهنده هستی میتونی سورس برنامه رو <a href='https://github.com/jadijadi/digikala_history' >اینجا</a> ببینی :)")
 
 if __name__ == "__main__":
     import sys
