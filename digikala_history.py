@@ -31,7 +31,6 @@ class ProcessThread(QThread):
             return
 
         self.UI.log.append('شروع')
-        app.processEvents()
 
         def dkprice_to_numbers(dkprice):
             '''gets something like ۱۱۷،۰۰۰ تومان and returns 117000'''
@@ -84,7 +83,6 @@ class ProcessThread(QThread):
             self.UI.log.append('کلمه عبور یا نام کاربری اشتباه است')
             return False
 
-        app.processEvents()
         page_number = 1
         orders = session.get(
             'https://www.digikala.com/profile/orders/?page=%i' % page_number)
@@ -94,7 +92,6 @@ class ProcessThread(QThread):
         all_post_prices = []  # list of post prices
 
         while not soup.find('div', class_='c-profile-empty'):
-            app.processEvents()
             for this_order in soup.find_all('a', class_='btn-order-more'):
                 this_order_link = this_order.get('href')
                 print('going to fetch: http://digikala.com' + this_order_link)
