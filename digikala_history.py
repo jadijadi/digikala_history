@@ -285,7 +285,7 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     # app.setLayoutDirection(QtCore.Qt.RightToLeft)
     MainWindow = QtWidgets.QMainWindow()
-    app_icon = QIcon('./icon.svg')
+    app_icon = QIcon(resource_path("icon.svg"))
     MainWindow.setWindowIcon(app_icon)
     ui = Ui_MainWindow()
     ui.setupUi(MainWindow)
