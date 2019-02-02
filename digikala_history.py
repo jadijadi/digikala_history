@@ -6,6 +6,7 @@
 #
 # WARNING! All changes made in this file will be lost!
 
+import os
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QThread, pyqtSignal
 from PyQt5.QtWidgets import QTableWidgetItem
@@ -214,7 +215,7 @@ class Ui_MainWindow(object):
         self.log.setGeometry(QtCore.QRect(210, 530, 625, 91))
         self.log.setObjectName("log")
         self.logo = QtWidgets.QLabel(self.centralwidget)
-        self.pixmap = QPixmap('./logo.png')
+        self.pixmap = QPixmap(resource_path("logo.png"))
         self.logo.setScaledContents(True)
         self.logo.setPixmap(self.pixmap)
         self.logo.setGeometry(QtCore.QRect(20, 30, 171, 171))
@@ -266,6 +267,17 @@ class Ui_MainWindow(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "اطلاعات عمومی"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("MainWindow", "نمودار خرید"))
         self.descriptionbox.setText("<p>با اجرای برنامه و وارد کردن نام کاربری (ایمیل) و کلمه عبور، برنامه تاریخچه فعالیت شما رو از سایت دیجی کالا دریافت میکنه و نمایش میده.</p><p>اطلاعات شما با هیچ جای دیگری به اشتراک گذاشته نمیشه و هیچ اطلاعات یا کلمه عبوری از شما نگهداری نمیشه.</p><p><i><a href='https://github.com/jadijadi/digikala_history' >سورس برنامه</a></i>")
+
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    print(os.path.join(base_path, relative_path))
+    return os.path.join(base_path, relative_path)
 
 if __name__ == "__main__":
     import sys
