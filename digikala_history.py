@@ -248,15 +248,16 @@ class Ui_MainWindow(object):
     def get_data(self):
         self.PT = ProcessThread(self)
         self.PT.start()
-        self.PT.finished.connect(self.done)
+
         self.run.setText("توقف")
+        self.PT.finished.connect(self.done)
         self.run.clicked.disconnect(self.get_data)
         self.run.clicked.connect(self.PT.stop)
 
     def done(self):
+        self.run.setText("اجرا")
         self.run.clicked.disconnect(self.PT.stop)
         self.run.clicked.connect(self.get_data)
-        self.run.setText("اجرا")
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
