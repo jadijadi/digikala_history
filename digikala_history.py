@@ -8,7 +8,7 @@
 
 import os
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt5.QtCore import QThread
 from PyQt5.QtWidgets import QTableWidgetItem
 from PyQt5.QtGui import QIcon, QPixmap
 import re
@@ -22,6 +22,9 @@ class ProcessThread(QThread):
 
     def __del__(self):
         self.wait()
+
+    def stop(self):
+        self.terminate()
 
     def run(self):
         if self.UI.username.text() == '':
@@ -238,14 +241,23 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
         self.tabWidget.setCurrentIndex(0)
-
-
         self.run.clicked.connect(self.get_data)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
 
     def get_data(self):
         self.PT = ProcessThread(self)
         self.PT.start()
+
+        self.run.setText("توقف")
+        self.PT.finished.connect(self.done)
+        self.run.clicked.disconnect(self.get_data)
+        self.run.clicked.connect(self.PT.stop)
+
+    def done(self):
+        self.run.setText("اجرا")
+        self.run.clicked.disconnect(self.PT.stop)
+        self.run.clicked.connect(self.get_data)
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
