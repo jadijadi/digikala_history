@@ -103,3 +103,4 @@ venv.bak/
 
 # Ignore files created by Pycharm witch I use :D
 .idea/
+.vscode/
