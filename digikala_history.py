@@ -16,6 +16,7 @@ import re
 import requests
 from bs4 import BeautifulSoup
 
+
 class ProcessThread(QThread):
     def __init__(self, UI):
         QThread.__init__(self)
@@ -67,7 +68,8 @@ class ProcessThread(QThread):
                     date = re.sub(u'ثبت شده در تاریخ ', '', date)
                     all_orders.append((date, name, num, price, discount))
 
-            dkpost_price = soup.find_all('div', class_='c-table-draught__col')[3].get_text()
+            dkpost_price = soup.find_all(
+                'div', class_='c-table-draught__col')[3].get_text()
             post_price = dkprice_to_numbers(dkpost_price)
             all_post_prices.append(post_price)
 
@@ -79,14 +81,14 @@ class ProcessThread(QThread):
         r = session.post(url, data=payload)
         if r.status_code != 200:
             self.UI.log.append('مشکل در اتصال. کد خطا: %s' % r.status_code)
-            return 
+            return
 
         successful_login_text = 'سفارش‌های من'
         if re.search(successful_login_text, r.text):
             self.UI.log.append('لاگین موفق')
         else:
             self.UI.log.append('کلمه عبور یا نام کاربری اشتباه است')
-            return 
+            return
 
         page_number = 1
         orders = session.get(
@@ -129,8 +131,10 @@ class ProcessThread(QThread):
 
             self.UI.output_general.setItem(n, 0, QTableWidgetItem(str(date)))
             self.UI.output_general.setItem(n, 1, QTableWidgetItem(str(num)))
-            self.UI.output_general.setItem(n, 2, QTableWidgetItem(str(this_product_total_price)))
-            self.UI.output_general.setItem(n, 3, QTableWidgetItem(str(discount)))
+            self.UI.output_general.setItem(
+                n, 2, QTableWidgetItem(str(this_product_total_price)))
+            self.UI.output_general.setItem(
+                n, 3, QTableWidgetItem(str(discount)))
             self.UI.output_general.setItem(n, 4, QTableWidgetItem(str(name)))
             n = n + 1
         purchase_count = len(all_post_prices)
@@ -138,9 +142,12 @@ class ProcessThread(QThread):
             total_post_price += post_price
 
         self.UI.output_result.clear()
-        price_item = ['کل خرید شما از دیجی کالا:    {} تومان'.format(total_price)]
-        total_post_price_item = ['مجموع هزینه ی پست:          {} تومان'.format(total_post_price)]
-        total_discount_item = ['مجموع تخفیفات دریافتی:     {} تومان'.format(total_discount)]
+        price_item = [
+            'کل خرید شما از دیجی کالا:    {} تومان'.format(total_price)]
+        total_post_price_item = [
+            'مجموع هزینه ی پست:          {} تومان'.format(total_post_price)]
+        total_discount_item = [
+            'مجموع تخفیفات دریافتی:     {} تومان'.format(total_discount)]
         purchase_item = ['تعداد خرید:    {} قطعه'.format(total_purchase)]
         purchase_count_item = ['دفعات خرید:    {} بار'.format(purchase_count)]
 
@@ -149,7 +156,6 @@ class ProcessThread(QThread):
         self.UI.output_result.addItems(total_discount_item)
         self.UI.output_result.addItems(purchase_item)
         self.UI.output_result.addItems(purchase_count_item)
-
 
 
 def resource_path(relative_path):
@@ -164,17 +170,19 @@ def resource_path(relative_path):
 
 
 def get_data():
-        window.PT = ProcessThread(window)
-        window.PT.start()
-        window.run.setText("توقف")
-        window.PT.finished.connect(done)
-        window.run.clicked.disconnect(get_data)
-        window.run.clicked.connect(window.PT.stop)
+    window.PT = ProcessThread(window)
+    window.PT.start()
+    window.run.setText("توقف")
+    window.PT.finished.connect(done)
+    window.run.clicked.disconnect(get_data)
+    window.run.clicked.connect(window.PT.stop)
+
 
 def done():
     window.run.setText("اجرا")
     window.run.clicked.disconnect(window.PT.stop)
     window.run.clicked.connect(get_data)
+
 
 def setupWindow(window):
     # connect signals and slots in here
@@ -185,12 +193,13 @@ def setupWindow(window):
     app_icon = QIcon(resource_path("icon.svg"))
     window.setWindowIcon(app_icon)
 
+
 if __name__ == "__main__":
     import sys
 
     app = QtWidgets.QApplication(sys.argv)
     # app.setLayoutDirection(QtCore.Qt.RightToLeft)
-    
+
     ui_file = QFile("digikala_history.ui")
     ui_file.open(QFile.ReadOnly)
     window = loadUi(ui_file)
