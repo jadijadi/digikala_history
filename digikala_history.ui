@@ -207,30 +207,28 @@
      <string/>
     </property>
    </widget>
-
-  <widget class="QLabel" name="descriptionbox">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>350</y>
-     <width>190</width>
-     <height>250</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>&lt;b&gt;توضیحات :&lt;/b&gt;&lt;br&gt;با اجرای برنامه و وارد کردن نام کاربری (ایمیل) و کلمه عبور، برنامه تاریخچه فعالیت شما رو از سایت دیجی کالا دریافت میکنه و نمایش میده.&lt;br&gt;اطلاعات شما با هیچ جای دیگری به اشتراک گذاشته نمیشه و هیچ اطلاعات یا کلمه عبوری از شما نگهداری نمیشه :)&lt;br&gt;همچنین اگه توسعه دهنده هستی میتونی سورس برنامه رو &lt;a href='https://github.com/jadijadi/digikala_history' &gt;اینجا&lt;/a&gt; ببینی :)</string>
-   </property>
-   <property name="textFormat">
-    <enum>Qt::RichText</enum>
-   </property>
-   <property name="wordWrap">
-    <bool>true</bool>
-   </property>
-   <property name="openExternalLinks">
-    <bool>true</bool>
-   </property>
-  </widget>
-
+   <widget class="QLabel" name="descriptionbox">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>350</y>
+      <width>190</width>
+      <height>250</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>&lt;b&gt;توضیحات :&lt;/b&gt;&lt;br&gt;با اجرای برنامه و وارد کردن نام کاربری (ایمیل) و کلمه عبور، برنامه تاریخچه فعالیت شما رو از سایت دیجی کالا دریافت میکنه و نمایش میده.&lt;br&gt;اطلاعات شما با هیچ جای دیگری به اشتراک گذاشته نمیشه و هیچ اطلاعات یا کلمه عبوری از شما نگهداری نمیشه :)&lt;br&gt;همچنین اگه توسعه دهنده هستی میتونی سورس برنامه رو &lt;a href='https://github.com/jadijadi/digikala_history' &gt;اینجا&lt;/a&gt; ببینی :)</string>
+    </property>
+    <property name="textFormat">
+     <enum>Qt::RichText</enum>
+    </property>
+    <property name="wordWrap">
+     <bool>true</bool>
+    </property>
+    <property name="openExternalLinks">
+     <bool>true</bool>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -238,29 +236,12 @@
      <x>0</x>
      <y>0</y>
      <width>851</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <resources/>
- <connections>
-  <connection>
-   <sender>run</sender>
-   <signal>clicked()</signal>
-   <receiver>run</receiver>
-   <slot>deleteLater()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>113</x>
-     <y>267</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>113</x>
-     <y>267</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>
