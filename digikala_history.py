@@ -8,9 +8,10 @@
 
 import os
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import QThread
+from PyQt5.QtCore import QThread, QFile
 from PyQt5.QtWidgets import QTableWidgetItem
 from PyQt5.QtGui import QIcon, QPixmap
+from PyQt5.uic import loadUi
 import re
 import requests
 from bs4 import BeautifulSoup
@@ -150,135 +151,6 @@ class ProcessThread(QThread):
         self.UI.output_result.addItems(purchase_count_item)
 
 
-class Ui_MainWindow(object):
-    def setupUi(self, MainWindow):
-        MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(851, 651)
-        self.centralwidget = QtWidgets.QWidget(MainWindow)
-        self.centralwidget.setObjectName("centralwidget")
-        self.username = QtWidgets.QLineEdit(self.centralwidget)
-        self.username.setGeometry(QtCore.QRect(20, 230, 171, 31))
-        self.username.setText("")
-        self.username.setObjectName("username")
-        self.password = QtWidgets.QLineEdit(self.centralwidget)
-        self.password.setGeometry(QtCore.QRect(20, 270, 171, 31))
-        self.password.setEchoMode(QtWidgets.QLineEdit.Password)
-        self.password.setObjectName("password")
-        self.run = QtWidgets.QPushButton(self.centralwidget)
-        self.run.setGeometry(QtCore.QRect(60, 320, 88, 27))
-        self.run.setObjectName("run")
-        self.username.returnPressed.connect(self.run.click)
-        self.password.returnPressed.connect(self.run.click)
-        self.tabWidget = QtWidgets.QTabWidget(self.centralwidget)
-        self.tabWidget.setGeometry(QtCore.QRect(210, 10, 625, 511))
-        self.tabWidget.setObjectName("tabWidget")
-        self.tab = QtWidgets.QWidget()
-        self.tab.setObjectName("tab")
-        self.output_general = QtWidgets.QTableWidget(self.tab)
-        self.output_general.setGeometry(QtCore.QRect(10, 10, 601, 371))
-        self.output_general.setLayoutDirection(QtCore.Qt.RightToLeft)
-        self.output_general.setLineWidth(1)
-        self.output_general.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustIgnored)
-        self.output_general.setShowGrid(True)
-        self.output_general.setObjectName("output_general")
-        self.output_general.setColumnCount(5)
-        self.output_general.setRowCount(0)
-        item = QtWidgets.QTableWidgetItem()
-        item.setTextAlignment(QtCore.Qt.AlignTrailing | QtCore.Qt.AlignVCenter)
-        self.output_general.setHorizontalHeaderItem(0, item)
-        item = QtWidgets.QTableWidgetItem()
-        item.setTextAlignment(QtCore.Qt.AlignTrailing | QtCore.Qt.AlignVCenter)
-        self.output_general.setHorizontalHeaderItem(1, item)
-        item = QtWidgets.QTableWidgetItem()
-        item.setTextAlignment(QtCore.Qt.AlignTrailing | QtCore.Qt.AlignVCenter)
-        self.output_general.setHorizontalHeaderItem(2, item)
-        item = QtWidgets.QTableWidgetItem()
-        item.setTextAlignment(QtCore.Qt.AlignTrailing | QtCore.Qt.AlignVCenter)
-        self.output_general.setHorizontalHeaderItem(3, item)
-        item = QtWidgets.QTableWidgetItem()
-        item.setTextAlignment(QtCore.Qt.AlignTrailing | QtCore.Qt.AlignVCenter)
-        self.output_general.setHorizontalHeaderItem(4, item)
-        self.output_general.horizontalHeader().setCascadingSectionResizes(False)
-        self.output_general.horizontalHeader().setDefaultSectionSize(80)
-        self.output_general.horizontalHeader().setMinimumSectionSize(38)
-        self.output_general.horizontalHeader().setSortIndicatorShown(False)
-        self.output_general.horizontalHeader().setStretchLastSection(True)
-        self.output_general.verticalHeader().setCascadingSectionResizes(False)
-        self.output_general.verticalHeader().setSortIndicatorShown(False)
-        self.output_general.verticalHeader().setStretchLastSection(False)
-        self.output_result = QtWidgets.QListWidget(self.tab)
-        self.output_result.setGeometry(QtCore.QRect(10, 370, 601, 101))
-        self.output_result.setLayoutDirection(QtCore.Qt.RightToLeft)
-        self.output_result.setObjectName("output_result")
-        self.tabWidget.addTab(self.tab, "")
-        self.tab_2 = QtWidgets.QWidget()
-        self.tab_2.setObjectName("tab_2")
-        self.tabWidget.addTab(self.tab_2, "")
-        self.log = QtWidgets.QTextBrowser(self.centralwidget)
-        self.log.setGeometry(QtCore.QRect(210, 530, 625, 91))
-        self.log.setObjectName("log")
-        self.logo = QtWidgets.QLabel(self.centralwidget)
-        self.pixmap = QPixmap(resource_path("logo.png"))
-        self.logo.setScaledContents(True)
-        self.logo.setPixmap(self.pixmap)
-        self.logo.setGeometry(QtCore.QRect(20, 30, 171, 171))
-        self.logo.setText("")
-        self.logo.setObjectName("logo")
-        MainWindow.setCentralWidget(self.centralwidget)
-        self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 851, 21))
-        self.menubar.setObjectName("menubar")
-        MainWindow.setMenuBar(self.menubar)
-        self.statusbar = QtWidgets.QStatusBar(MainWindow)
-        self.statusbar.setObjectName("statusbar")
-        MainWindow.setStatusBar(self.statusbar)
-        self.descriptionbox = QtWidgets.QLabel(self.centralwidget)
-        self.descriptionbox.setGeometry(QtCore.QRect(10, 350, 190, 250))
-        self.descriptionbox.setWordWrap(True)
-        self.descriptionbox.setTextFormat(1)
-        self.descriptionbox.setOpenExternalLinks(True)
-        self.descriptionbox.setObjectName("descriptionbox")
-
-        self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(0)
-        self.run.clicked.connect(self.get_data)
-        QtCore.QMetaObject.connectSlotsByName(MainWindow)
-
-
-    def get_data(self):
-        self.PT = ProcessThread(self)
-        self.PT.start()
-
-        self.run.setText("توقف")
-        self.PT.finished.connect(self.done)
-        self.run.clicked.disconnect(self.get_data)
-        self.run.clicked.connect(self.PT.stop)
-
-    def done(self):
-        self.run.setText("اجرا")
-        self.run.clicked.disconnect(self.PT.stop)
-        self.run.clicked.connect(self.get_data)
-
-    def retranslateUi(self, MainWindow):
-        _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "سابقه من در دیجی کالا"))
-        self.username.setPlaceholderText(_translate("MainWindow", "Email"))
-        self.password.setPlaceholderText(_translate("MainWindow", "Password"))
-        self.run.setText(_translate("MainWindow", "اجرا"))
-        self.output_general.setSortingEnabled(False)
-        item = self.output_general.horizontalHeaderItem(0)
-        item.setText(_translate("MainWindow", "تاریخ"))
-        item = self.output_general.horizontalHeaderItem(1)
-        item.setText(_translate("MainWindow", "تعداد"))
-        item = self.output_general.horizontalHeaderItem(2)
-        item.setText(_translate("MainWindow", "قیمت کل"))
-        item = self.output_general.horizontalHeaderItem(3)
-        item.setText(_translate("MainWindow", "تخفیف"))
-        item = self.output_general.horizontalHeaderItem(4)
-        item.setText(_translate("MainWindow", "نام"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "اطلاعات عمومی"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("MainWindow", "نمودار خرید"))
-        self.descriptionbox.setText("<p>با اجرای برنامه و وارد کردن نام کاربری (ایمیل) و کلمه عبور، برنامه تاریخچه فعالیت شما رو از سایت دیجی کالا دریافت میکنه و نمایش میده.</p><p>اطلاعات شما با هیچ جای دیگری به اشتراک گذاشته نمیشه و هیچ اطلاعات یا کلمه عبوری از شما نگهداری نمیشه.</p><p><i><a href='https://github.com/jadijadi/digikala_history' >سورس برنامه</a></i>")
 
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
@@ -290,15 +162,40 @@ def resource_path(relative_path):
 
     return os.path.join(base_path, relative_path)
 
+
+def get_data():
+        window.PT = ProcessThread(window)
+        window.PT.start()
+        window.run.setText("توقف")
+        window.PT.finished.connect(done)
+        window.run.clicked.disconnect(get_data)
+        window.run.clicked.connect(window.PT.stop)
+
+def done():
+    window.run.setText("اجرا")
+    window.run.clicked.disconnect(window.PT.stop)
+    window.run.clicked.connect(get_data)
+
+def setupWindow(window):
+    # connect signals and slots in here
+    window.run.clicked.connect(get_data)
+    window.username.returnPressed.connect(window.run.click)
+    window.password.returnPressed.connect(window.run.click)
+
+    app_icon = QIcon(resource_path("icon.svg"))
+    window.setWindowIcon(app_icon)
+
 if __name__ == "__main__":
     import sys
 
     app = QtWidgets.QApplication(sys.argv)
     # app.setLayoutDirection(QtCore.Qt.RightToLeft)
-    MainWindow = QtWidgets.QMainWindow()
-    app_icon = QIcon(resource_path("icon.svg"))
-    MainWindow.setWindowIcon(app_icon)
-    ui = Ui_MainWindow()
-    ui.setupUi(MainWindow)
-    MainWindow.show()
+    
+    ui_file = QFile("digikala_history.ui")
+    ui_file.open(QFile.ReadOnly)
+    window = loadUi(ui_file)
+    ui_file.close()
+    setupWindow(window)
+    window.show()
+
     sys.exit(app.exec_())
