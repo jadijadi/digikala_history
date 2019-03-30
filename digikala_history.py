@@ -66,10 +66,13 @@ class ProcessThread(QThread):
                     date = re.sub(u'ثبت شده در تاریخ ', '', date)
                     all_orders.append((date, name, num, price, discount))
 
-            dkpost_price = soup.find_all('div', class_='c-table-draught__col')[3].get_text()
-            post_price = dkprice_to_numbers(dkpost_price)
-            all_post_prices.append(post_price)
-
+            try:
+                dkpost_price = soup.find_all('div', class_='c-table-draught__col')[3].get_text()
+                post_price = dkprice_to_numbers(dkpost_price)
+                all_post_prices.append(post_price)
+            except:
+                all_post_prices.append(0)
+                print("tried to get price but failed, maybe the order is cancelled")
         self.UI.log.append('تلاش برای ورود')
         url = 'https://www.digikala.com/users/login/'
         payload = {'login[email_phone]': self.UI.username.text(),
