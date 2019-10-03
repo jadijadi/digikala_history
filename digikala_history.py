@@ -14,12 +14,16 @@ from PyQt5.QtGui import QIcon, QPixmap
 import re
 import requests
 from bs4 import BeautifulSoup
+import pyqtgraph as pg
+import pyqtgraph.exporters
+import numpy as np
+from pyqtgraph.Qt import QtGui, QtCore
 
 class ProcessThread(QThread):
     def __init__(self, UI):
         QThread.__init__(self)
         self.UI = UI
-
+        
     def __del__(self):
         self.wait()
 
@@ -78,14 +82,14 @@ class ProcessThread(QThread):
         r = session.post(url, data=payload)
         if r.status_code != 200:
             self.UI.log.append('مشکل در اتصال. کد خطا: %s' % r.status_code)
-            return 
+            return
 
         successful_login_text = 'سفارش‌های من'
         if re.search(successful_login_text, r.text):
             self.UI.log.append('لاگین موفق')
         else:
             self.UI.log.append('کلمه عبور یا نام کاربری اشتباه است')
-            return 
+            return
 
         page_number = 1
         orders = session.get(
@@ -116,6 +120,8 @@ class ProcessThread(QThread):
         total_post_price = 0
         total_discount = 0
         self.UI.output_general.setRowCount(len(all_orders))
+        self.xData = []
+        self.yData = []
 
         for date, name, num, price, discount in all_orders:
             this_purchase_str = "تاریخ %s:‌ %s عدد %s, به قیمت هر واحد %s\n" % (
@@ -125,13 +131,17 @@ class ProcessThread(QThread):
             total_price += this_product_total_price
             total_purchase += 1
             total_discount += discount
-
+            
+            self.xData.append(n)
+            self.yData.append(this_product_total_price)
             self.UI.output_general.setItem(n, 0, QTableWidgetItem(str(date)))
             self.UI.output_general.setItem(n, 1, QTableWidgetItem(str(num)))
             self.UI.output_general.setItem(n, 2, QTableWidgetItem(str(this_product_total_price)))
             self.UI.output_general.setItem(n, 3, QTableWidgetItem(str(discount)))
             self.UI.output_general.setItem(n, 4, QTableWidgetItem(str(name)))
             n = n + 1
+
+        self.UI.curve.setData(x = self.xData, y =self.yData)
         purchase_count = len(all_post_prices)
         for post_price in all_post_prices:
             total_post_price += post_price
@@ -148,7 +158,8 @@ class ProcessThread(QThread):
         self.UI.output_result.addItems(total_discount_item)
         self.UI.output_result.addItems(purchase_item)
         self.UI.output_result.addItems(purchase_count_item)
-
+       
+        
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -211,9 +222,23 @@ class Ui_MainWindow(object):
         self.output_result.setLayoutDirection(QtCore.Qt.RightToLeft)
         self.output_result.setObjectName("output_result")
         self.tabWidget.addTab(self.tab, "")
-        self.tab_2 = QtWidgets.QWidget()
-        self.tab_2.setObjectName("tab_2")
-        self.tabWidget.addTab(self.tab_2, "")
+        self.win = pg.GraphicsWindow(title="")
+        #win.resize(1000,600)
+        self.win.setWindowTitle('')
+
+        # Enable antialiasing for prettier plots
+        pg.setConfigOptions(antialias=True)
+
+        self.p6 = self.win.addPlot(title="نمودار قیمت خرید ها")
+        self.curve = self.p6.plot(pen='r')
+        self.plottab = QtGui.QWidget()
+        self.layout1 = QtGui.QVBoxLayout()
+        self.layout1.addWidget(self.win)
+        self.plottab.setLayout(self.layout1)
+        self.plottab.setObjectName("plottab")
+        ###
+        self.tabWidget.addTab(self.plottab, "")
+        ###
         self.log = QtWidgets.QTextBrowser(self.centralwidget)
         self.log.setGeometry(QtCore.QRect(210, 530, 625, 91))
         self.log.setObjectName("log")
@@ -264,6 +289,9 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "سابقه من در دیجی کالا"))
         self.username.setPlaceholderText(_translate("MainWindow", "Email"))
         self.password.setPlaceholderText(_translate("MainWindow", "Password"))
+        self.username.setText(_translate("MainWindow", ""))
+        self.password.setText(_translate("MainWindow", ""))
+        
         self.run.setText(_translate("MainWindow", "اجرا"))
         self.output_general.setSortingEnabled(False)
         item = self.output_general.horizontalHeaderItem(0)
@@ -277,7 +305,7 @@ class Ui_MainWindow(object):
         item = self.output_general.horizontalHeaderItem(4)
         item.setText(_translate("MainWindow", "نام"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "اطلاعات عمومی"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("MainWindow", "نمودار خرید"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.plottab), _translate("MainWindow", "نمودار خرید"))
         self.descriptionbox.setText("<p>با اجرای برنامه و وارد کردن نام کاربری (ایمیل) و کلمه عبور، برنامه تاریخچه فعالیت شما رو از سایت دیجی کالا دریافت میکنه و نمایش میده.</p><p>اطلاعات شما با هیچ جای دیگری به اشتراک گذاشته نمیشه و هیچ اطلاعات یا کلمه عبوری از شما نگهداری نمیشه.</p><p><i><a href='https://github.com/jadijadi/digikala_history' >سورس برنامه</a></i>")
 
 def resource_path(relative_path):

@@ -6,6 +6,6 @@ Extract and analyze the history of your purchases on Digikala
 
 - [x] add price seperator
 - [ ] add export to csv or xls
-- [ ] add chart
+- [x] add chart
 - [ ] beautify code
 - [ ] internationalization
