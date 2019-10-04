@@ -17,6 +17,8 @@ from PyQt5.uic import loadUi
 import re
 import requests
 from bs4 import BeautifulSoup
+from datetime import datetime
+import csv
 
 # set the environment variable to use a specific wrapper
 # it can be set to pyqt, pyqt5, pyside or pyside2 (not implemented yet)
@@ -90,12 +92,30 @@ class ProcessThread(QThread):
             return
 
         successful_login_text = 'سفارش‌های من'
+        failed_login_text = 'اطلاعات کاربری نادرست است'
+        
         if re.search(successful_login_text, r.text):
-            self.UI.log.append('لاگین موفق')
-        else:
+            self.UI.log.append('۱ لاگین موفق')
+
+        elif re.search(failed_login_text, self.UI.username.text()):
+            r = session.post(url, data=payload)
+            if r.status_code != 200:
+                self.UI.log.append('مشکل در اتصال. کد خطا: %s' % r.status_code)
+                return
+            if re.search(successful_login_text, r.text):
+                self.UI.log.append('۲ لاگین موفق')
+            elif re.search(failed_login_text, r.text):
+                self.UI.log.append('کلمه عبور یا نام کاربری اشتباه است')
+                return
+            else :
+                self.UI.log.append('خطای نا معلوم')
+                return
+        elif re.search(failed_login_text, r.text):
             self.UI.log.append('کلمه عبور یا نام کاربری اشتباه است')
             return
-
+        else :
+            self.UI.log.append('خطای نا معلوم')
+            return
         page_number = 1
         orders = session.get(
             'https://www.digikala.com/profile/orders/?page=%i' % page_number)
@@ -168,6 +188,9 @@ class ProcessThread(QThread):
         self.UI.output_result.addItems(total_discount_item)
         self.UI.output_result.addItems(purchase_item)
         self.UI.output_result.addItems(purchase_count_item)
+        window.exportCsv.setEnabled(True)
+        window.exportExcel.setEnabled(True)
+        self.UI.all_orders = all_orders
 
 
 def resource_path(relative_path):
@@ -177,8 +200,28 @@ def resource_path(relative_path):
         base_path = sys._MEIPASS
     except Exception:
         base_path = os.path.abspath(".")
-
     return os.path.join(base_path, relative_path)
+
+def export_csv():
+    username = window.username.text()
+    now = datetime.now()
+    nowStr = now.strftime("%Y-%m-%d--%H-%M-%S")
+    fileName = '%s %s.csv' % (username, nowStr)
+    with open(fileName, mode='w', encoding='utf-8') as purche_file:
+        fieldnames = ["name", "discount", "price", "num", "date"]#['تاریخ', 'تعداد', 'قیمت کل', 'تخفیف', 'نام']
+        purche_writer = csv.writer(purche_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+
+        purche_writer.writerow(fieldnames)
+        for date, name, num, price, discount in window.all_orders:
+            this_product_total_price = (price * num) - discount
+            purche_writer.writerow([ name, discount, this_product_total_price, num, date])
+    
+
+def export_excel():
+    username = window.username.text()
+    now = datetime.now()
+    nowStr = now.strftime("%Y-%m-%d--%H-%M-%S")
+    fileName = '%s %s.csv' % (username, nowStr)
 
 
 def get_data():
@@ -201,7 +244,10 @@ def setupWindow(window):
     window.run.clicked.connect(get_data)
     window.username.returnPressed.connect(window.run.click)
     window.password.returnPressed.connect(window.run.click)
-    
+    window.exportCsv.clicked.connect(export_csv)
+    window.exportExcel.clicked.connect(export_excel)
+    window.exportCsv.setEnabled(False)
+    window.exportExcel.setEnabled(False)
     app_icon = QIcon(resource_path("icon.svg"))
     window.setWindowIcon(app_icon)
     app_image = QPixmap("icon.svg")

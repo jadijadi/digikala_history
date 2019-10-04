@@ -11,16 +11,14 @@ import os
 os.environ['PYQTGRAPH_QT_LIB'] = 'PyQt5'
 
 class  PlotWidget(pg.GraphicsWindow):
-    # pg.setConfigOption('background', 'b')
-    # pg.setConfigOption('foreground', 'k')
-    ptr1 = 0
+
     def __init__(self, parent=None, **kargs):
         pg.GraphicsWindow.__init__(self, **kargs)
         self.setParent(parent)
         self.setWindowTitle('pyqtgraph example: Scrolling Plots')
         # Enable antialiasing for prettier plots
         pg.setConfigOptions(antialias=True)
-        self.p6 = self.addPlot(title="نمودار قیمت خرید ها")
+        self.p6 = self.addPlot(title="")
         self.curve = self.p6.plot(pen='r')
         
 

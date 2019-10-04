@@ -137,7 +137,7 @@
          </attribute>
          <layout class="QGridLayout" name="gridLayout">
           <item row="0" column="0">
-           <layout class="QVBoxLayout" name="verticalLayout_3" stretch="10,1">
+           <layout class="QVBoxLayout" name="verticalLayout_3" stretch="10,0,1">
             <item>
              <widget class="QTableWidget" name="output_general">
               <property name="layoutDirection">
@@ -220,6 +220,27 @@
                </property>
               </column>
              </widget>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_3">
+              <item>
+               <widget class="QPushButton" name="exportCsv">
+                <property name="layoutDirection">
+                 <enum>Qt::RightToLeft</enum>
+                </property>
+                <property name="text">
+                 <string>خروجی CSV</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="exportExcel">
+                <property name="text">
+                 <string>خروجی Excel</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </item>
             <item>
              <widget class="QListWidget" name="output_result">
