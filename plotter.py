@@ -15,7 +15,7 @@ class  PlotWidget(pg.GraphicsWindow):
     def __init__(self, parent=None, **kargs):
         pg.GraphicsWindow.__init__(self, **kargs)
         self.setParent(parent)
-        self.setWindowTitle('pyqtgraph example: Scrolling Plots')
+        self.setWindowTitle('')
         # Enable antialiasing for prettier plots
         pg.setConfigOptions(antialias=True)
         self.p6 = self.addPlot(title="")
@@ -25,6 +25,10 @@ class  PlotWidget(pg.GraphicsWindow):
     def addData(self, xData, yData):
         self.curve.setData(x = xData, y = yData)
         
+    def getImage(self, filename):
+        exporter =  exporter = pyqtgraph.exporters.ImageExporter(self.scene())
+        exporter.export(filename)
+
 if __name__ == '__main__':
     w = PlotWidget()
     w.show()

@@ -7,7 +7,7 @@
 # WARNING! All changes made in this file will be lost!
 
 import os
-# import sys
+import sys
 import qdarkstyle
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QThread, QFile
@@ -221,8 +221,8 @@ def export_excel():
     username = window.username.text()
     now = datetime.now()
     nowStr = now.strftime("%Y-%m-%d--%H-%M-%S")
-    fileName = '%s %s.csv' % (username, nowStr)
-
+    fileName = '%s %s.png' % (username, nowStr)
+    window.plot.getImage(fileName)
 
 def get_data():
     window.PT = ProcessThread(window)
