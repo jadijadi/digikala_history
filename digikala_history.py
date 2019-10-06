@@ -19,6 +19,7 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
 import csv
+import xlwt
 
 # set the environment variable to use a specific wrapper
 # it can be set to pyqt, pyqt5, pyside or pyside2 (not implemented yet)
@@ -208,7 +209,7 @@ def export_csv():
     nowStr = now.strftime("%Y-%m-%d--%H-%M-%S")
     fileName = '%s %s.csv' % (username, nowStr)
     with open(fileName, mode='w', encoding='utf-8') as purche_file:
-        fieldnames = ["name", "discount", "price", "num", "date"]#['تاریخ', 'تعداد', 'قیمت کل', 'تخفیف', 'نام']
+        fieldnames = ["نام", "تخفیف", " قیمت کل", "تعداد", "تاریخ"]
         purche_writer = csv.writer(purche_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
         purche_writer.writerow(fieldnames)
@@ -221,8 +222,31 @@ def export_excel():
     username = window.username.text()
     now = datetime.now()
     nowStr = now.strftime("%Y-%m-%d--%H-%M-%S")
-    fileName = '%s %s.png' % (username, nowStr)
-    window.plot.getImage(fileName)
+    imgfileName = '%s %s.bmp' % (username, nowStr)
+    xlsfilename = '%s %s.xls' % (username, nowStr)
+    window.plot.getImage(imgfileName)
+    fieldnames = ["سطر","نام", "تخفیف", " قیمت کل", "تعداد", "تاریخ"]
+        
+    book = xlwt.Workbook(encoding="utf-8")
+    sheet = book.add_sheet(username)
+    n = 0
+    for field in fieldnames:
+        sheet.write(0, n, field)
+        n = n + 1
+    n = 1
+    for date, name, num, price, discount in window.all_orders:
+        this_product_total_price = (price * num) - discount
+        sheet.write(n,0,"%s" % n)
+        sheet.write(n,1,"%s" % name)
+        sheet.write(n,2,"%s" % discount)
+        sheet.write(n,3,"%s" % this_product_total_price)
+        sheet.write(n,4,"%s" % num)
+        sheet.write(n,5,"%s" % date)
+        n = n + 1
+    sheet.write(n+2, 1, "نمودار هزینه های انجام شده")
+    sheet.insert_bitmap(imgfileName, n+2, 3)
+    book.save(xlsfilename)
+    os.remove(imgfileName)
 
 def get_data():
     window.PT = ProcessThread(window)
