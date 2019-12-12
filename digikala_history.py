@@ -96,16 +96,20 @@ class ProcessThread(QThread):
         all_post_prices = []  # list of post prices
 
         while not soup.find('div', class_='c-profile-empty'):
-            for this_order in soup.find_all('a', class_='btn-order-more'):
-                this_order_link = this_order.get('href')
-                print('going to fetch: http://digikala.com' + this_order_link)
-                one_page = session.get('http://digikala.com' + this_order_link)
-                extract_data(one_page, all_orders, all_post_prices)
+            for mainline in soup.find_all('div', class_='c-table-orders__row') :
+                for status in mainline.find_all('span', class_='c-table-orders__payment-status c-table-orders__payment-status--ok') :
+                    if status.string == "پرداخت موفق" :
+                        for this_order in mainline.find_all('a', class_='btn-order-more') :
+                            this_order_link = this_order.get('href')
+                            print('going to fetch: http://digikala.com' + this_order_link)
+                            one_page = session.get('http://digikala.com' + this_order_link)
+                            extract_data(one_page, all_orders, all_post_prices)            
             self.UI.log.append('بررسی صفحه %i' % page_number)
             page_number += 1
             orders = session.get(
                 'https://www.digikala.com/profile/orders/?page=%i' % page_number)
             soup = BeautifulSoup(orders.text, 'html.parser')
+
 
         self.UI.log.append('پایان')
 
