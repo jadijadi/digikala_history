@@ -208,16 +208,16 @@ class ProcessThread(QThread):
             this_product_total_price = (price * num) - discount * num
             total_price += this_product_total_price
             total_purchase += 1
-            total_discount += discount
+            total_discount += discount * num
             
             self.xData.append(n)
             self.yData.append(this_product_total_price)
             self.UI.output_general.setItem(n, 0, QTableWidgetItem(str(date)))
-            self.UI.output_general.setItem(n, 1, QTableWidgetItem(str(num)))
+            self.UI.output_general.setItem(n, 1, QTableWidgetItem('{:,d}'.format(num)))
             self.UI.output_general.setItem(
-                n, 2, QTableWidgetItem(str(this_product_total_price)))
+                n, 2, QTableWidgetItem('{:,d}'.format(this_product_total_price)))
             self.UI.output_general.setItem(
-                n, 3, QTableWidgetItem(str(discount)))
+                n, 3, QTableWidgetItem('{:,d}'.format(discount)))
             self.UI.output_general.setItem(n, 4, QTableWidgetItem(str(name)))
             n = n + 1
 
@@ -228,13 +228,13 @@ class ProcessThread(QThread):
 
         self.UI.output_result.clear()
         price_item = [
-            'کل خرید شما از دیجی کالا:    {} تومان'.format(total_price)]
+            'کل خرید شما از دیجی کالا:    {:,d} تومان'.format(total_price)]
         total_post_price_item = [
-            'مجموع هزینه ی پست:          {} تومان'.format(total_post_price)]
+            'مجموع هزینه ی پست:          {:,d} تومان'.format(total_post_price)]
         total_discount_item = [
-            'مجموع تخفیفات دریافتی:     {} تومان'.format(total_discount)]
-        purchase_item = ['تعداد خرید:    {} قطعه'.format(total_purchase)]
-        purchase_count_item = ['دفعات خرید:    {} بار'.format(purchase_count)]
+            'مجموع تخفیفات دریافتی:     {:,d} تومان'.format(total_discount)]
+        purchase_item = ['تعداد خرید:    {:,d} قطعه'.format(total_purchase)]
+        purchase_count_item = ['دفعات خرید:    {:,d} بار'.format(purchase_count)]
 
         self.UI.output_result.addItems(price_item)
         self.UI.output_result.addItems(total_post_price_item)
