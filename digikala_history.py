@@ -267,7 +267,7 @@ def export_csv():
 
         purche_writer.writerow(fieldnames)
         for date, name, num, price, discount in window.all_orders:
-            this_product_total_price = (price * num) - discount
+            this_product_total_price = (price * num) - discount * num
             purche_writer.writerow([ name, discount, this_product_total_price, num, date])
     
 
@@ -288,7 +288,7 @@ def export_excel():
         n = n + 1
     n = 1
     for date, name, num, price, discount in window.all_orders:
-        this_product_total_price = (price * num) - discount
+        this_product_total_price = (price * num) - discount * num
         sheet.write(n,0,"%s" % n)
         sheet.write(n,1,"%s" % name)
         sheet.write(n,2,"%s" % discount)
