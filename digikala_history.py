@@ -69,30 +69,37 @@ class ProcessThread(QThread):
 
         def extract_data(one_page, all_orders, all_post_prices):
             soup = BeautifulSoup(one_page.text, 'html.parser')
-            # there might be more than one table
-            for this_table in soup.find_all('div', class_='c-table-order__body'):
-                for this_item in this_table.find_all('div', class_='c-table-order__row'):
-                    name = this_item.find('span').get_text()
-                    dknum = this_item.find(
-                        'div', class_='c-table-order__cell--value').get_text()
-                    num = dkprice_to_numbers(dknum)
-                    dkprice = this_item.find(
-                        'div', class_='c-table-order__cell--price-value').get_text()
-                    price = dkprice_to_numbers(dkprice)
-                    dkdiscount = this_item.find(
-                        'div', class_='c-table-order__cell c-table-order__cell--discount').get_text()
-                    discount = dkprice_to_numbers(dkdiscount)
-                    date = soup.find('h4').span.get_text()
-                    date = re.sub(u'ثبت شده در تاریخ ', '', date)
-                    all_orders.append((date, name, num, price, discount))
+            date = soup.find('div', class_='o-box').find('div', class_='c-profile-order__details-top-bar').find('div', class_='c-profile-order__details-header').find('div', class_='c-profile-order__list-item-detail').get_text()
 
-            try:
-                dkpost_price = soup.find_all('div', class_='c-table-draught__col')[3].get_text()
-                post_price = dkprice_to_numbers(dkpost_price)
-                all_post_prices.append(post_price)
-            except:
-                all_post_prices.append(0)
-                print("tried to get price but failed, maybe the order is cancelled")
+            # there might be more than one table
+            for this_table in soup.find_all('div', class_='c-profile-order__list-item-products'):
+                for this_item in this_table.find_all('div', class_='c-profile-order__list-item-product'):
+
+                    name = this_item.find('div', class_='c-profile-order__list-item-product-title').get_text()
+
+                    dknum = this_item.find('span', class_='c-profile-order__list-item-parcel-product-qty').get_text()
+                    num = dkprice_to_numbers(dknum)
+
+                    dkprices = this_item.find_all('div', class_='c-profile-order__list-item-detail c-profile-order__list-item-detail--currency')
+                    price = dkprice_to_numbers(dkprices[0].get_text())
+
+                    dkdiscount = dkprices[1].get_text() if len(dkprices) == 2 else "0" 
+                    discount = dkprice_to_numbers(dkdiscount)
+
+                    date2 = re.sub(u'ثبت شده در تاریخ ', '', date)
+
+                    all_orders.append((date2, name, num, price, discount))
+
+            dkpost_price = soup.find('div', class_='o-box').find_all('div', class_='c-profile-order__list-item')
+            post_price = 0
+
+            for list_item in dkpost_price:
+                temp = list_item.find_all('div', class_='c-profile-order__list-item-detail')
+                for item in temp:
+                    if item.get_text().find('ارسال') >=0:
+                        post_price += dkprice_to_numbers(item.get_text())
+                    
+            all_post_prices.append(post_price)
 
 
         def login(session, email, password):
@@ -162,25 +169,23 @@ class ProcessThread(QThread):
             return
         page_number = 1
         orders = session.get(
-            'https://www.digikala.com/profile/orders/?page=%i' % page_number)
+            'https://www.digikala.com/profile/my-orders/?activeTab=delivered&page=%i' % page_number)
         soup = BeautifulSoup(orders.text, 'html.parser')
 
         all_orders = []  # (list of (date, name, number, item_price))
         all_post_prices = []  # list of post prices
 
-        while not soup.find('div', class_='c-profile-empty'):
-            for mainline in soup.find_all('div', class_='c-table-orders__row') :
-                for status in mainline.find_all('span', class_='c-table-orders__payment-status c-table-orders__payment-status--ok') :
-                    if status.string == "پرداخت موفق" :
-                        for this_order in mainline.find_all('a', class_='btn-order-more') :
-                            this_order_link = this_order.get('href')
-                            print('going to fetch: http://digikala.com' + this_order_link)
-                            one_page = session.get('http://digikala.com' + this_order_link)
-                            extract_data(one_page, all_orders, all_post_prices)            
+        while not soup.find('div', class_='c-profile-empty-temporary__img'):
+            for mainline in soup.find_all('div', class_='c-profile-order__list-item') :
+                for this_order in mainline.find_all('a', class_='o-link o-link--has-arrow') :
+                    this_order_link = this_order.get('href')
+                    print('going to fetch: http://digikala.com' + this_order_link)
+                    one_page = session.get('http://digikala.com' + this_order_link)
+                    extract_data(one_page, all_orders, all_post_prices)            
             self.UI.log.append('بررسی صفحه %i' % page_number)
             page_number += 1
             orders = session.get(
-                'https://www.digikala.com/profile/orders/?page=%i' % page_number)
+                'https://www.digikala.com/profile/my-orders/?activeTab=delivered&page=%i' % page_number)
             soup = BeautifulSoup(orders.text, 'html.parser')
 
 
@@ -200,7 +205,7 @@ class ProcessThread(QThread):
             this_purchase_str = "تاریخ %s:‌ %s عدد %s, به قیمت هر واحد %s\n" % (
                 date, num, name, price)
             full_purchase_list = this_purchase_str + full_purchase_list
-            this_product_total_price = (price * num) - discount
+            this_product_total_price = (price * num) - discount * num
             total_price += this_product_total_price
             total_purchase += 1
             total_discount += discount
