@@ -94,12 +94,42 @@ class ProcessThread(QThread):
                 all_post_prices.append(0)
                 print("tried to get price but failed, maybe the order is cancelled")
 
+
+        def login(session, email, password):
+            url = 'https://www.digikala.com/users/login-register/'
+            r = session.get(url)
+            rc, rd = get_rc_rd(r)
+
+            payload = {
+                'login[email_phone]': email,
+                'rc': rc,
+                'rd': rd
+            }
+
+            url = 'https://www.digikala.com/users/login-register/'
+            r = session.post(url, data = payload)
+            rc, rd = get_rc_rd(r)
+
+            payload = {
+                'login[password]': password,
+                'rc': rc,
+                'rd': rd
+            }
+            token = get_token(r)
+            type = 'login_by_password'
+            _back = 'https://www.digikala.com/profile/'
+            url = f'https://www.digikala.com/users/login/confirm/?token={token}&type={type}&_back={_back}'
+            r = session.post(url, data = payload)            
+            return r
+
         self.UI.log.append('تلاش برای ورود')
-        url = 'https://www.digikala.com/users/login/'
-        payload = {'login[email_phone]': self.UI.username.text(),
-                   'login[password]': self.UI.password.text(), 'remember': 1}
-        session = requests.session()
-        r = session.post(url, data=payload)
+
+        email =  self.UI.username.text()
+        password =  self.UI.password.text()
+
+        session = requests.Session()
+        r = login(session, email, password)
+        
         if r.status_code != 200:
             self.UI.log.append('مشکل در اتصال. کد خطا: %s' % r.status_code)
             return
@@ -107,24 +137,25 @@ class ProcessThread(QThread):
         successful_login_text = 'سفارش‌های من'
         failed_login_text = 'اطلاعات کاربری نادرست است'
         
-        if re.search(successful_login_text, r.text):
+        if r.text.find(successful_login_text) >= 0:
             self.UI.log.append('۱ لاگین موفق')
 
         elif re.search(failed_login_text, self.UI.username.text()):
-            r = session.post(url, data=payload)
+            r = login(session, email, password)
             if r.status_code != 200:
                 self.UI.log.append('مشکل در اتصال. کد خطا: %s' % r.status_code)
                 return
-            if re.search(successful_login_text, r.text):
+            if r.text.find(successful_login_text) >= 0:
                 self.UI.log.append('۲ لاگین موفق')
-            elif re.search(failed_login_text, r.text):
+            elif r.text.find(failed_login_text) >= 0:
                 self.UI.log.append('کلمه عبور یا نام کاربری اشتباه است')
                 return
             else :
                 self.UI.log.append('خطای نا معلوم')
                 return
-        elif re.search(failed_login_text, r.text):
+        elif r.text.find(failed_login_text) >= 0:
             self.UI.log.append('کلمه عبور یا نام کاربری اشتباه است')
+            print('b')
             return
         else :
             self.UI.log.append('خطای نا معلوم')
