@@ -47,6 +47,15 @@ class ProcessThread(QThread):
 
         self.UI.log.append('شروع')
 
+        def get_rc_rd(request):
+            soup = BeautifulSoup(request.text, 'html.parser')
+            inputs = soup.select("form input", {'class': 'c-login__form'})
+            return(inputs[0]['value'], inputs[1]['value'])
+        
+        def get_token(request):
+            start, end = request.text.find('token=') + 6, request.text.find('DjxBQ"') + 5
+            return request.text[start:end]
+
         def dkprice_to_numbers(dkprice):
             '''gets something like ۱۱۷،۰۰۰ تومان and returns 117000'''
             convert_dict = {u'۱': '1', u'۲': '2', u'۳': '3', u'۴': '4', u'۵': '5',
