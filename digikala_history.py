@@ -47,6 +47,15 @@ class ProcessThread(QThread):
 
         self.UI.log.append('شروع')
 
+        def get_rc_rd(request):
+            soup = BeautifulSoup(request.text, 'html.parser')
+            inputs = soup.select("form input", {'class': 'c-login__form'})
+            return(inputs[0]['value'], inputs[1]['value'])
+        
+        def get_token(request):
+            start, end = request.text.find('token=') + 6, request.text.find('DjxBQ"') + 5
+            return request.text[start:end]
+
         def dkprice_to_numbers(dkprice):
             '''gets something like ۱۱۷،۰۰۰ تومان and returns 117000'''
             convert_dict = {u'۱': '1', u'۲': '2', u'۳': '3', u'۴': '4', u'۵': '5',
@@ -60,37 +69,74 @@ class ProcessThread(QThread):
 
         def extract_data(one_page, all_orders, all_post_prices):
             soup = BeautifulSoup(one_page.text, 'html.parser')
-            # there might be more than one table
-            for this_table in soup.find_all('div', class_='c-table-order__body'):
-                for this_item in this_table.find_all('div', class_='c-table-order__row'):
-                    name = this_item.find('span').get_text()
-                    dknum = this_item.find(
-                        'div', class_='c-table-order__cell--value').get_text()
-                    num = dkprice_to_numbers(dknum)
-                    dkprice = this_item.find(
-                        'div', class_='c-table-order__cell--price-value').get_text()
-                    price = dkprice_to_numbers(dkprice)
-                    dkdiscount = this_item.find(
-                        'div', class_='c-table-order__cell c-table-order__cell--discount').get_text()
-                    discount = dkprice_to_numbers(dkdiscount)
-                    date = soup.find('h4').span.get_text()
-                    date = re.sub(u'ثبت شده در تاریخ ', '', date)
-                    all_orders.append((date, name, num, price, discount))
+            date = soup.find('div', class_='o-box').find('div', class_='c-profile-order__details-top-bar').find('div', class_='c-profile-order__details-header').find('div', class_='c-profile-order__list-item-detail').get_text()
 
-            try:
-                dkpost_price = soup.find_all('div', class_='c-table-draught__col')[3].get_text()
-                post_price = dkprice_to_numbers(dkpost_price)
-                all_post_prices.append(post_price)
-            except:
-                all_post_prices.append(0)
-                print("tried to get price but failed, maybe the order is cancelled")
+            # there might be more than one table
+            for this_table in soup.find_all('div', class_='c-profile-order__list-item-products'):
+                for this_item in this_table.find_all('div', class_='c-profile-order__list-item-product'):
+
+                    name = this_item.find('div', class_='c-profile-order__list-item-product-title').get_text()
+
+                    dknum = this_item.find('span', class_='c-profile-order__list-item-parcel-product-qty').get_text()
+                    num = dkprice_to_numbers(dknum)
+
+                    dkprices = this_item.find_all('div', class_='c-profile-order__list-item-detail c-profile-order__list-item-detail--currency')
+                    price = dkprice_to_numbers(dkprices[0].get_text())
+
+                    dkdiscount = dkprices[1].get_text() if len(dkprices) == 2 else "0" 
+                    discount = dkprice_to_numbers(dkdiscount)
+
+                    date2 = re.sub(u'ثبت شده در تاریخ ', '', date)
+
+                    all_orders.append((date2, name, num, price, discount))
+
+            dkpost_price = soup.find('div', class_='o-box').find_all('div', class_='c-profile-order__list-item')
+            post_price = 0
+
+            for list_item in dkpost_price:
+                temp = list_item.find_all('div', class_='c-profile-order__list-item-detail')
+                for item in temp:
+                    if item.get_text().find('ارسال') >=0:
+                        post_price += dkprice_to_numbers(item.get_text())
+                    
+            all_post_prices.append(post_price)
+
+
+        def login(session, email, password):
+            url = 'https://www.digikala.com/users/login-register/'
+            r = session.get(url)
+            rc, rd = get_rc_rd(r)
+
+            payload = {
+                'login[email_phone]': email,
+                'rc': rc,
+                'rd': rd
+            }
+
+            url = 'https://www.digikala.com/users/login-register/'
+            r = session.post(url, data = payload)
+            rc, rd = get_rc_rd(r)
+
+            payload = {
+                'login[password]': password,
+                'rc': rc,
+                'rd': rd
+            }
+            token = get_token(r)
+            type = 'login_by_password'
+            _back = 'https://www.digikala.com/profile/'
+            url = f'https://www.digikala.com/users/login/confirm/?token={token}&type={type}&_back={_back}'
+            r = session.post(url, data = payload)            
+            return r
 
         self.UI.log.append('تلاش برای ورود')
-        url = 'https://www.digikala.com/users/login/'
-        payload = {'login[email_phone]': self.UI.username.text(),
-                   'login[password]': self.UI.password.text(), 'remember': 1}
-        session = requests.session()
-        r = session.post(url, data=payload)
+
+        email =  self.UI.username.text()
+        password =  self.UI.password.text()
+
+        session = requests.Session()
+        r = login(session, email, password)
+        
         if r.status_code != 200:
             self.UI.log.append('مشکل در اتصال. کد خطا: %s' % r.status_code)
             return
@@ -98,49 +144,48 @@ class ProcessThread(QThread):
         successful_login_text = 'سفارش‌های من'
         failed_login_text = 'اطلاعات کاربری نادرست است'
         
-        if re.search(successful_login_text, r.text):
+        if r.text.find(successful_login_text) >= 0:
             self.UI.log.append('۱ لاگین موفق')
 
         elif re.search(failed_login_text, self.UI.username.text()):
-            r = session.post(url, data=payload)
+            r = login(session, email, password)
             if r.status_code != 200:
                 self.UI.log.append('مشکل در اتصال. کد خطا: %s' % r.status_code)
                 return
-            if re.search(successful_login_text, r.text):
+            if r.text.find(successful_login_text) >= 0:
                 self.UI.log.append('۲ لاگین موفق')
-            elif re.search(failed_login_text, r.text):
+            elif r.text.find(failed_login_text) >= 0:
                 self.UI.log.append('کلمه عبور یا نام کاربری اشتباه است')
                 return
             else :
                 self.UI.log.append('خطای نا معلوم')
                 return
-        elif re.search(failed_login_text, r.text):
+        elif r.text.find(failed_login_text) >= 0:
             self.UI.log.append('کلمه عبور یا نام کاربری اشتباه است')
+            print('b')
             return
         else :
             self.UI.log.append('خطای نا معلوم')
             return
         page_number = 1
         orders = session.get(
-            'https://www.digikala.com/profile/orders/?page=%i' % page_number)
+            'https://www.digikala.com/profile/my-orders/?activeTab=delivered&page=%i' % page_number)
         soup = BeautifulSoup(orders.text, 'html.parser')
 
         all_orders = []  # (list of (date, name, number, item_price))
         all_post_prices = []  # list of post prices
 
-        while not soup.find('div', class_='c-profile-empty'):
-            for mainline in soup.find_all('div', class_='c-table-orders__row') :
-                for status in mainline.find_all('span', class_='c-table-orders__payment-status c-table-orders__payment-status--ok') :
-                    if status.string == "پرداخت موفق" :
-                        for this_order in mainline.find_all('a', class_='btn-order-more') :
-                            this_order_link = this_order.get('href')
-                            print('going to fetch: http://digikala.com' + this_order_link)
-                            one_page = session.get('http://digikala.com' + this_order_link)
-                            extract_data(one_page, all_orders, all_post_prices)            
+        while not soup.find('div', class_='c-profile-empty-temporary__img'):
+            for mainline in soup.find_all('div', class_='c-profile-order__list-item') :
+                for this_order in mainline.find_all('a', class_='o-link o-link--has-arrow') :
+                    this_order_link = this_order.get('href')
+                    print('going to fetch: http://digikala.com' + this_order_link)
+                    one_page = session.get('http://digikala.com' + this_order_link)
+                    extract_data(one_page, all_orders, all_post_prices)            
             self.UI.log.append('بررسی صفحه %i' % page_number)
             page_number += 1
             orders = session.get(
-                'https://www.digikala.com/profile/orders/?page=%i' % page_number)
+                'https://www.digikala.com/profile/my-orders/?activeTab=delivered&page=%i' % page_number)
             soup = BeautifulSoup(orders.text, 'html.parser')
 
 
@@ -160,19 +205,19 @@ class ProcessThread(QThread):
             this_purchase_str = "تاریخ %s:‌ %s عدد %s, به قیمت هر واحد %s\n" % (
                 date, num, name, price)
             full_purchase_list = this_purchase_str + full_purchase_list
-            this_product_total_price = (price * num) - discount
+            this_product_total_price = (price * num) - discount * num
             total_price += this_product_total_price
             total_purchase += 1
-            total_discount += discount
+            total_discount += discount * num
             
             self.xData.append(n)
             self.yData.append(this_product_total_price)
             self.UI.output_general.setItem(n, 0, QTableWidgetItem(str(date)))
-            self.UI.output_general.setItem(n, 1, QTableWidgetItem(str(num)))
+            self.UI.output_general.setItem(n, 1, QTableWidgetItem('{:,d}'.format(num)))
             self.UI.output_general.setItem(
-                n, 2, QTableWidgetItem(str(this_product_total_price)))
+                n, 2, QTableWidgetItem('{:,d}'.format(this_product_total_price)))
             self.UI.output_general.setItem(
-                n, 3, QTableWidgetItem(str(discount)))
+                n, 3, QTableWidgetItem('{:,d}'.format(discount)))
             self.UI.output_general.setItem(n, 4, QTableWidgetItem(str(name)))
             n = n + 1
 
@@ -183,13 +228,13 @@ class ProcessThread(QThread):
 
         self.UI.output_result.clear()
         price_item = [
-            'کل خرید شما از دیجی کالا:    {} تومان'.format(total_price)]
+            'کل خرید شما از دیجی کالا:    {:,d} تومان'.format(total_price)]
         total_post_price_item = [
-            'مجموع هزینه ی پست:          {} تومان'.format(total_post_price)]
+            'مجموع هزینه ی پست:          {:,d} تومان'.format(total_post_price)]
         total_discount_item = [
-            'مجموع تخفیفات دریافتی:     {} تومان'.format(total_discount)]
-        purchase_item = ['تعداد خرید:    {} قطعه'.format(total_purchase)]
-        purchase_count_item = ['دفعات خرید:    {} بار'.format(purchase_count)]
+            'مجموع تخفیفات دریافتی:     {:,d} تومان'.format(total_discount)]
+        purchase_item = ['تعداد خرید:    {:,d} قطعه'.format(total_purchase)]
+        purchase_count_item = ['دفعات خرید:    {:,d} بار'.format(purchase_count)]
 
         self.UI.output_result.addItems(price_item)
         self.UI.output_result.addItems(total_post_price_item)
@@ -204,7 +249,7 @@ class ProcessThread(QThread):
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
     try:
-        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        # PyInstaller creates a temp folder and stores path in _MEIPASS.
         base_path = sys._MEIPASS
     except Exception:
         base_path = os.path.dirname(os.path.abspath(__file__))
@@ -222,7 +267,7 @@ def export_csv():
 
         purche_writer.writerow(fieldnames)
         for date, name, num, price, discount in window.all_orders:
-            this_product_total_price = (price * num) - discount
+            this_product_total_price = (price * num) - discount * num
             purche_writer.writerow([ name, discount, this_product_total_price, num, date])
     
 
@@ -243,7 +288,7 @@ def export_excel():
         n = n + 1
     n = 1
     for date, name, num, price, discount in window.all_orders:
-        this_product_total_price = (price * num) - discount
+        this_product_total_price = (price * num) - discount * num
         sheet.write(n,0,"%s" % n)
         sheet.write(n,1,"%s" % name)
         sheet.write(n,2,"%s" % discount)
