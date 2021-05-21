@@ -86,40 +86,54 @@ class ProcessThread(QThread):
                 print("tried to get price but failed, maybe the order is cancelled")
 
         self.UI.log.append('تلاش برای ورود')
-        url = 'https://www.digikala.com/users/login/'
-        payload = {'login[email_phone]': self.UI.username.text(),
-                   'login[password]': self.UI.password.text(), 'remember': 1}
+        url = 'https://www.digikala.com/users/login-register/'
         session = requests.session()
-        r = session.post(url, data=payload)
-        if r.status_code != 200:
+        
+        # email-phone
+        r1_dom = BeautifulSoup(session.get(url).text, 'html.parser')
+        payload = {
+            'login[email_phone]': self.UI.username.text(),
+            'rc': r1_dom.select('input[name=rc]')[0]['value'],
+            'rd': r1_dom.select('input[name=rd]')[0]['value'],
+        }
+        r2 = session.post(url, data=payload)
+        if r2.status_code != 200:
             self.UI.log.append('مشکل در اتصال. کد خطا: %s' % r.status_code)
             return
-
-        successful_login_text = 'سفارش‌های من'
-        failed_login_text = 'اطلاعات کاربری نادرست است'
         
-        if re.search(successful_login_text, r.text):
-            self.UI.log.append('۱ لاگین موفق')
+        password_text = 'رمز عبور را وارد کنید'
+        successful_login_text = 'سفارش‌های من'
+        failed_login_text = r'\u0627\u0637\u0644\u0627\u0639\u0627\u062a \u06a9\u0627\u0631\u0628\u0631\u06cc \u0646\u0627\u062f\u0631\u0633\u062a \u0627\u0633\u062a'
+        
+        # password
+        if password_text in r2.text:
+            r2_dom = BeautifulSoup(r2.text, 'html.parser')
 
-        elif re.search(failed_login_text, self.UI.username.text()):
-            r = session.post(url, data=payload)
-            if r.status_code != 200:
+            payload = {
+                'login[password]': self.UI.password.text(),
+                'rc': r2_dom.select('input[name=rc]')[0]['value'],
+                'rd': r2_dom.select('input[name=rd]')[0]['value'],
+            }
+            r3 = session.post(r2.url, data=payload)
+            if r3.status_code != 200:
                 self.UI.log.append('مشکل در اتصال. کد خطا: %s' % r.status_code)
                 return
-            if re.search(successful_login_text, r.text):
-                self.UI.log.append('۲ لاگین موفق')
-            elif re.search(failed_login_text, r.text):
+
+            # succeed :)
+            if successful_login_text in r3.text:
+                self.UI.log.append('ورود موفق')
+            # wrong data :(
+            elif failed_login_text in r3.text:
                 self.UI.log.append('کلمه عبور یا نام کاربری اشتباه است')
                 return
-            else :
+            # unknown
+            else:
                 self.UI.log.append('خطای نا معلوم')
                 return
-        elif re.search(failed_login_text, r.text):
-            self.UI.log.append('کلمه عبور یا نام کاربری اشتباه است')
-            return
-        else :
+        else:
             self.UI.log.append('خطای نا معلوم')
             return
+        
         page_number = 1
         orders = session.get(
             'https://www.digikala.com/profile/orders/?page=%i' % page_number)
