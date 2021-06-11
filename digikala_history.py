@@ -49,13 +49,10 @@ class ProcessThread(QThread):
 
         def dkprice_to_numbers(dkprice):
             '''gets something like ۱۱۷،۰۰۰ تومان and returns 117000'''
-            convert_dict = {u'۱': '1', u'۲': '2', u'۳': '3', u'۴': '4', u'۵': '5',
-                            u'۶': '6', u'۷': '7', u'۸': '8', u'۹': '9', u'۰': '0', }
-            price = u'۰' + dkprice
-            for k in convert_dict.keys():
-                price = re.sub(k, convert_dict[k], price)
-
-            price = re.sub('[^0-9]', '', price)
+            price = ''
+            for number in dkprice:
+                if number.isnumeric():
+                    price += number
             return int(price)
 
         def extract_data(one_page, all_orders, all_post_prices):
