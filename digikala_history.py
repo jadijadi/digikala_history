@@ -52,7 +52,7 @@ class ProcessThread(QThread):
             convert_dict = {u'۱': '1', u'۲': '2', u'۳': '3', u'۴': '4', u'۵': '5',
                             u'۶': '6', u'۷': '7', u'۸': '8', u'۹': '9', u'۰': '0', }
             price = u'۰' + dkprice
-            for k in convert_dict.keys():
+            for k in convert_dict:
                 price = re.sub(k, convert_dict[k], price)
 
             price = re.sub('[^0-9]', '', price)
@@ -234,13 +234,13 @@ def export_excel():
     xlsfilename = '%s %s.xls' % (username, nowStr)
     window.plot.getImage(imgfileName)
     fieldnames = ["سطر","نام", "تخفیف", " قیمت کل", "تعداد", "تاریخ"]
-        
+
     book = xlwt.Workbook(encoding="utf-8")
     sheet = book.add_sheet(username)
     n = 0
     for field in fieldnames:
         sheet.write(0, n, field)
-        n = n + 1
+        n += 1
     n = 1
     for date, name, num, price, discount in window.all_orders:
         this_product_total_price = (price * num) - discount
@@ -250,7 +250,7 @@ def export_excel():
         sheet.write(n,3,"%s" % this_product_total_price)
         sheet.write(n,4,"%s" % num)
         sheet.write(n,5,"%s" % date)
-        n = n + 1
+        n += 1
     sheet.write(n+2, 1, "نمودار هزینه های انجام شده")
     sheet.insert_bitmap(imgfileName, n+2, 3)
     book.save(xlsfilename)
